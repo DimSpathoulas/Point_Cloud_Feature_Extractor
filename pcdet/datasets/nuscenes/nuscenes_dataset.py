@@ -15,6 +15,7 @@ from PIL import Image
 class NuScenesDataset(DatasetTemplate):
     def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None):
         root_path = (root_path if root_path is not None else Path(dataset_cfg.DATA_PATH)) / dataset_cfg.VERSION
+        # print(root_path)
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
         )
@@ -32,12 +33,26 @@ class NuScenesDataset(DatasetTemplate):
 
     def include_nuscenes_data(self, mode):
         self.logger.info('Loading NuScenes dataset')
-        nuscenes_infos = []
 
+        nuscenes_infos = []  # to run you need to build info
+        mode = 'test'  # change to test or train - train = train, test = val
+        print("mode", mode)
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
-            if not info_path.exists():
-                continue
+
+            # change for mini train or val accordingly
+            # info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_val.pkl'
+            info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_train.pkl'
+            print(info_path)
+
+            # IF YOU ARE USING MINI COMMENT OUT THIS SECTION
+
+            # if not info_path.exists():
+            #     continue
+
+            # TILL HERE
+
+
             with open(info_path, 'rb') as f:
                 infos = pickle.load(f)
                 nuscenes_infos.extend(infos)
@@ -100,6 +115,9 @@ class NuScenesDataset(DatasetTemplate):
 
     def get_lidar_with_sweeps(self, index, max_sweeps=1):
         info = self.infos[index]
+
+        self.root_path = Path('../../data/nuscenes/v1.0-mini')  # use if mini version
+
         lidar_path = self.root_path / info['lidar_path']
         points = np.fromfile(str(lidar_path), dtype=np.float32, count=-1).reshape([-1, 5])[:, :4]
 
@@ -141,17 +159,17 @@ class NuScenesDataset(DatasetTemplate):
                 crop_h = newH - fH
                 crop_w = int(max(0, newW - fW) / 2)
                 crop = (crop_w, crop_h, crop_w + fW, crop_h + fH)
-            
+
             # reisze and crop image
             img = img.resize(resize_dims)
             img = img.crop(crop)
             crop_images.append(img)
             img_process_infos.append([resize, crop, False, 0])
-        
+
         input_dict['img_process_infos'] = img_process_infos
         input_dict['camera_imgs'] = crop_images
         return input_dict
-    
+
     def load_camera_info(self, input_dict, info):
         input_dict["image_paths"] = []
         input_dict["lidar2camera"] = []
@@ -166,7 +184,7 @@ class NuScenesDataset(DatasetTemplate):
             # lidar to camera transform
             lidar2camera_r = np.linalg.inv(camera_info["sensor2lidar_rotation"])
             lidar2camera_t = (
-                camera_info["sensor2lidar_translation"] @ lidar2camera_r.T
+                    camera_info["sensor2lidar_translation"] @ lidar2camera_r.T
             )
             lidar2camera_rt = np.eye(4).astype(np.float32)
             lidar2camera_rt[:3, :3] = lidar2camera_r.T
@@ -200,10 +218,10 @@ class NuScenesDataset(DatasetTemplate):
         images = []
         for name in filename:
             images.append(Image.open(str(self.root_path / name)))
-        
+
         input_dict["camera_imgs"] = images
         input_dict["ori_shape"] = images[0].size
-        
+
         # resize and crop image
         input_dict = self.crop_image(input_dict)
 
@@ -219,14 +237,27 @@ class NuScenesDataset(DatasetTemplate):
         if self._merge_all_iters_to_one_epoch:
             index = index % len(self.infos)
 
-        info = copy.deepcopy(self.infos[index])
+        info = copy.deepcopy(self.infos[index]) # thelo to sample_data_token alla den mporei na to travhksei
         points = self.get_lidar_with_sweeps(index, max_sweeps=self.dataset_cfg.MAX_SWEEPS)
+
+        # original dict
+        # input_dict = {
+        #     'points': points,
+        #     'frame_id': Path(info['lidar_path']).stem,
+        #     'metadata': {'token': info['timestamp']}
+        # }
+
 
         input_dict = {
             'points': points,
             'frame_id': Path(info['lidar_path']).stem,
-            'metadata': {'token': info['token']}
+            'metadata': {
+                'token': info['token'],
+                'timestamp': info['timestamp']
+            }
         }
+        # print("input_metadata", input_dict["metadata"]) # den einai monadiko - monadiko einai to timestamp kai to sample
+
 
         if 'gt_boxes' in info:
             if self.dataset_cfg.get('FILTER_MIN_POINTS_IN_GT', False):
