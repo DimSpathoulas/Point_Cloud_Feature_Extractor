@@ -63,6 +63,10 @@ class Detector3DTemplate(nn.Module):
         )
         model_info_dict['num_point_features'] = vfe_module.get_output_feature_dim()
         model_info_dict['module_list'].append(vfe_module)
+
+        # print("model_info_dict",model_info_dict)
+        # print("vfe",vfe_module)
+
         return vfe_module, model_info_dict
 
     def build_backbone_3d(self, model_info_dict):
@@ -80,6 +84,9 @@ class Detector3DTemplate(nn.Module):
         model_info_dict['num_point_features'] = backbone_3d_module.num_point_features
         model_info_dict['backbone_channels'] = backbone_3d_module.backbone_channels \
             if hasattr(backbone_3d_module, 'backbone_channels') else None
+
+        # print(backbone_3d_module)
+
         return backbone_3d_module, model_info_dict
 
     def build_map_to_bev_module(self, model_info_dict):
@@ -92,6 +99,8 @@ class Detector3DTemplate(nn.Module):
         )
         model_info_dict['module_list'].append(map_to_bev_module)
         model_info_dict['num_bev_features'] = map_to_bev_module.num_bev_features
+
+        # print(map_to_bev_module)
         return map_to_bev_module, model_info_dict
 
     def build_backbone_2d(self, model_info_dict):
@@ -104,6 +113,8 @@ class Detector3DTemplate(nn.Module):
         )
         model_info_dict['module_list'].append(backbone_2d_module)
         model_info_dict['num_bev_features'] = backbone_2d_module.num_bev_features
+
+        # print(backbone_2d_module)
         return backbone_2d_module, model_info_dict
 
     def build_pfe(self, model_info_dict):
@@ -136,6 +147,9 @@ class Detector3DTemplate(nn.Module):
             voxel_size=model_info_dict.get('voxel_size', False)
         )
         model_info_dict['module_list'].append(dense_head_module)
+
+        # print(dense_head_module)
+        # print(model_info_dict)
         return dense_head_module, model_info_dict
 
     def build_point_head(self, model_info_dict):
@@ -155,6 +169,7 @@ class Detector3DTemplate(nn.Module):
         )
 
         model_info_dict['module_list'].append(point_head_module)
+
         return point_head_module, model_info_dict
 
     def build_roi_head(self, model_info_dict):
