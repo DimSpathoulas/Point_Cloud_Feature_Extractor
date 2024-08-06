@@ -1,4 +1,4 @@
-# Point Cloud Features vectors extraction based on detections 
+# Point Cloud Feature extraction based on detections 
 
 pcet/datasets/nuscenes/nuscenes_dataset.py 38, 44, 119
 
