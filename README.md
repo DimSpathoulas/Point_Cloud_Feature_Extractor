@@ -9,7 +9,7 @@ CenterPoint detects objects. The detected centers of objects are inversely trans
 
 We then extract a point cloud feature. This point cloud feature consists of a 3×3 patch around the center. Feature map has 512 layers depth.
 
-**Module is tailored for nuScenes dataset and CenterPoints' trained model.**
+**Module is tailored for nuScenes dataset and CenterPoint's trained model.**
 
 pcet/datasets/nuscenes/nuscenes_dataset.py 38, 44, 119
 
