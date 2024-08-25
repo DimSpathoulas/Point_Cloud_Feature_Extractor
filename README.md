@@ -7,7 +7,7 @@ This module is dedicated to extracting 3d detections and their representing poin
 
 CenterPoint detects objects. The detected centers of objects are inversely transformed from the lidar frame to the BEV feature map. 
 
-We then extract a point cloud feature. This point cloud feature consists of a 3×3 patch around each center. Feature map has 512 layers depth.
+We then extract a point cloud feature. This point cloud feature consists of a 3×3 patch around the center. Feature map has 512 layers depth.
 
 **Module is tailored for nuScenes dataset and CenterPoints' trained model.**
 
