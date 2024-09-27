@@ -35,14 +35,20 @@ class NuScenesDataset(DatasetTemplate):
         self.logger.info('Loading NuScenes dataset')
 
         nuscenes_infos = []  # to run you need to build info
-        mode = 'test'  # change to test or train - train = train, test = val
-        print("mode", mode)
+        # mode = 'test'  # change to test or train - train = train, test = val
+        # if self.training:
+        #     mode = 'train'
+        # else:
+        #     mode='test'
+        # print("mode", mode)
+        print("mode is", mode)
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
 
             # change for mini train or val accordingly
-            # info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_val.pkl'
-            info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_train.pkl'
+            info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_val.pkl'
+            # info_path = '/second_ext4/ktsiakas/kosmas/nuscenes/v1.0-trainval/nuscenes_infos_10sweeps_train.pkl'
+            
             print(info_path)
 
             # IF YOU ARE USING MINI COMMENT OUT THIS SECTION
@@ -51,7 +57,6 @@ class NuScenesDataset(DatasetTemplate):
             #     continue
 
             # TILL HERE
-
 
             with open(info_path, 'rb') as f:
                 infos = pickle.load(f)
@@ -116,7 +121,7 @@ class NuScenesDataset(DatasetTemplate):
     def get_lidar_with_sweeps(self, index, max_sweeps=1):
         info = self.infos[index]
 
-        self.root_path = Path('../../data/nuscenes/v1.0-mini')  # use if mini version
+        # self.root_path = Path('../../data/nuscenes/v1.0-mini')  # use if mini version
 
         lidar_path = self.root_path / info['lidar_path']
         points = np.fromfile(str(lidar_path), dtype=np.float32, count=-1).reshape([-1, 5])[:, :4]
@@ -237,7 +242,7 @@ class NuScenesDataset(DatasetTemplate):
         if self._merge_all_iters_to_one_epoch:
             index = index % len(self.infos)
 
-        info = copy.deepcopy(self.infos[index]) # thelo to sample_data_token alla den mporei na to travhksei
+        info = copy.deepcopy(self.infos[index])
         points = self.get_lidar_with_sweeps(index, max_sweeps=self.dataset_cfg.MAX_SWEEPS)
 
         # original dict

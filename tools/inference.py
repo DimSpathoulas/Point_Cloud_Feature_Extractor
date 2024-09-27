@@ -67,6 +67,21 @@ class DemoDataset(DatasetTemplate):
         data_dict = self.prepare_data(data_dict=input_dict)
         return data_dict
 
+def save_and_stack_results(all_pred_dicts, output_file):
+
+    if os.path.exists(output_file):
+        # Load existing results
+        existing_results = np.load(output_file, allow_pickle=True)
+        # Stack new results with existing ones
+        combined_results = np.concatenate((existing_results, all_pred_dicts))
+
+    else:
+        combined_results = np.array(all_pred_dicts)
+    
+    # Save combined results
+    np.save(output_file, combined_results)
+    print(f"Saved {len(combined_results)} samples to {output_file}")
+
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
@@ -76,13 +91,14 @@ def parse_config():
                         help='specify the point cloud data file or directory')
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
+    parser.add_argument("--train", action="store_true", 
+                    help="use train set or val") 
 
     args = parser.parse_args()
 
     cfg_from_yaml_file(args.cfg_file, cfg)
 
     return args, cfg
-
 
 def main():
 
@@ -96,21 +112,30 @@ def main():
     )
 
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=nusc_dataset)
-    model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=True)
+    model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=False)
     model.cuda()
     model.eval()
 
     # Define the path to the output JSON file
-    output_file = "../../data/centerpoint_dets/centerpoint_predictions_mini_train_v7.npy"  # change accordingly
+    # if args.train:
+    #     output_file = "centerpoint_predictions_train.npy" 
+    # else:
+    #     output_file = "centerpoint_predictions_val_2.npy" 
+
+    output_file = "centerpoint_predictions_val_2.npy" 
+
+    if os.path.exists(output_file):
+        os.remove(output_file)
 
     all_pred_dicts = []
+    sample_count = 0
+    save_interval = 500
     print('Starting evaluation')
+    
     with torch.no_grad():
         for idx, data_dict in enumerate(nusc_dataset):
 
-            if idx > 40:
-                break
-
+            torch.cuda.empty_cache()    
             # print(f"Iteration {idx + 1} / n")
             data_dict = nusc_dataset.collate_batch([data_dict])
             load_data_to_gpu(data_dict)
@@ -122,13 +147,13 @@ def main():
             #     ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             # )
 
-            if not OPEN3D_FLAG:
-                mlab.show(stop=True)
+            # if not OPEN3D_FLAG:
+            #     mlab.show(stop=True)
 
             new_dict = {'metadata': pred_dict['metadata']}
             # new_dict = {'metadata': pred_dict['metadata'].tolist()}
 
-            threshold_mask = pred_dict['pred_scores'] > 0.61  # kapoy 0.61 eida einai ok.... mporei kai ligo pio kato
+            threshold_mask = pred_dict['pred_scores'] > 0.19  # kapoy 0.61 eida einai ok.... mporei kai ligo pio kato
 
             for key, value in pred_dict.items():
                 if key != 'metadata':
@@ -143,10 +168,23 @@ def main():
 
             # print(new_dict)
             # print(new_dict['metadata'])
-            all_pred_dicts.append(new_dict)
 
-        # print(all_pred_dicts)
-        np.save(output_file, all_pred_dicts)
+            all_pred_dicts.append(new_dict)
+            sample_count += 1
+
+            # print('all preds len', len(all_pred_dicts))
+
+            if sample_count % save_interval == 0:
+                save_and_stack_results(all_pred_dicts, output_file)
+                all_pred_dicts = []  # Clear the list after saving
+
+            torch.cuda.empty_cache()
+
+        print('complete len counter', sample_count)
+        torch.cuda.empty_cache()
+        if all_pred_dicts:
+            save_and_stack_results(all_pred_dicts, output_file)
+            # print('final all preds len', len(all_pred_dicts))
 
         print("Saved predictions")
 
