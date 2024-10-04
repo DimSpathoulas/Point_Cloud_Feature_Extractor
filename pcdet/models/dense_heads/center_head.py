@@ -118,7 +118,7 @@ class CenterHead(nn.Module):
         self.add_module('reg_loss_func', loss_utils.RegLossCenterNet())
 
 
-  def assign_target_of_single_head(
+    def assign_target_of_single_head(
             self, num_classes, gt_boxes, feature_map_size, feature_map_stride, num_max_objs=500,
             gaussian_overlap=0.1, min_radius=2
     ):
@@ -399,7 +399,8 @@ class CenterHead(nn.Module):
         pred_dicts = []
         for head in self.heads_list:
             pred_dicts.append(head(x))  # apo to 64 ftiaxnei xarakthristika
-
+        
+        # print(self.training)
         if self.training:
             target_dict = self.assign_targets(
                 data_dict['gt_boxes'], feature_map_size=spatial_features_2d.size()[2:],
@@ -432,17 +433,19 @@ class CenterHead(nn.Module):
         else:
 
             # print(data_dict['final_box_dicts'][0]['pred_scores'].shape)
-            featmapstride = self.feature_map_stride
+            feature_map_stride = self.feature_map_stride
             voxel_size = self.voxel_size
-            pcdr = self.point_cloud_range
+            point_cloud_range = self.point_cloud_range
+            # print('\n', feature_map_stride,voxel_size[0],voxel_size[1],point_cloud_range[0],point_cloud_range[1])
 
             xc = pred_dicts[0]['pred_boxes'][:, 0]  # edo eina ta n kentra sto x
             yc = pred_dicts[0]['pred_boxes'][:, 1]
 
-            features = spatial_features_2d[0]  # 512, 128, 128
+            features = spatial_features_2d[0]  # 512, 128, 128 with 0.1 but with 0.075 its 180*180
+            # print(features.shape[1]- 2)
 
-            xs = (xc - pcdr[0]) / (featmapstride*voxel_size[0])
-            ys = (yc - pcdr[1]) / (featmapstride*voxel_size[1])
+            xs = (xc - point_cloud_range[0]) / (feature_map_stride*voxel_size[0])
+            ys = (yc - point_cloud_range[1]) / (feature_map_stride*voxel_size[1])
 
             region_size = 3
             region_dict = []
@@ -450,21 +453,26 @@ class CenterHead(nn.Module):
             for x_center, y_center in zip(xs, ys):
 
                 x_start = max(0, int(x_center - region_size // 2))
-                if x_start >= 126:
-                    x_start = 125
+
+                if x_start >= features.shape[1]- 2:  #126 and 178
+                    x_start = features.shape[1]- 3   #125 and 177
 
                 y_start = max(0, int(y_center - region_size // 2))
-                if y_start >= 126:
-                    y_start = 125
+
+                if y_start >= features.shape[1]- 2:
+                    y_start = features.shape[1]- 3
 
                 x_end = min(features.size(1), int(x_center + region_size // 2 + 1))
                 y_end = min(features.size(2), int(y_center + region_size // 2 + 1))
 
-                if x_end <= 2:
-                    x_end = 3
+                if x_end <= 2:  # 2
+                    x_end = 3   # 3
 
                 if y_end <= 2:
                     y_end = 3
+
+                # print(x_start, x_end,'\n', y_start, y_end)
+                # print("\n", y_end - y_start, x_end-x_start)
 
                 region = features[:, x_start:x_end, y_start:y_end]
                 region_dict.append(region)

@@ -29,10 +29,16 @@ tools/inference.py
 `cd tools;`
 `python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel01_centerpoint_nds_6454.pth`  
 or
-`python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel01_centerpoint_nds_6454.pth`  
+`python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel0075_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel0075_centerpoint_nds_6648.pth`  
+
+or (orevall better performance allegedly)
+nusc_centerpoint_voxelnet_0075voxel_fix_bn_z.py with weights https://github.com/tianweiy/CenterPoint/blob/master/configs/nusc/README.md
+
+
 
 change line in pcdet/datasets/nuscenes/nuscenes_dataset.py L49 OR L50
 
+FROM CFGS nuscenes_yaml DATA_PATH: '/second_ext4/ktsiakas/kosmas/nuscenes'
 3. inference.py L104: Make the output also an argument – You cant be sure that this directory exists for everyone, the setup with data, make it an argument. Also customize it if it is train or val
 
 4. [DONE] inference.py L111 comment this thing out: if idx > 40:  break

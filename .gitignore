@@ -6,6 +6,7 @@ data/
 *.pyc
 venv/
 *.idea/
+*.npy
 *.so
 *.yaml
 *.sh

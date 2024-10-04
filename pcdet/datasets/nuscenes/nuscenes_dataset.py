@@ -41,12 +41,12 @@ class NuScenesDataset(DatasetTemplate):
         # else:
         #     mode='test'
         # print("mode", mode)
-        print("mode is", mode)
+        # print("mode is", mode)
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
 
             # change for mini train or val accordingly
-            info_path = '../../data/nuscenes/v1.0-mini/v1.0-mini/nuscenes_infos_10sweeps_val.pkl'
+            info_path = '/second_ext4/ktsiakas/kosmas/nuscenes/v1.0-trainval/nuscenes_infos_10sweeps_val.pkl'
             # info_path = '/second_ext4/ktsiakas/kosmas/nuscenes/v1.0-trainval/nuscenes_infos_10sweeps_train.pkl'
             
             print(info_path)

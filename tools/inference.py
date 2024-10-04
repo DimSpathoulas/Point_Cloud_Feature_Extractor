@@ -2,6 +2,7 @@ import argparse
 import glob
 from pathlib import Path
 import os
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:32'
 import json
 
 try:
@@ -122,7 +123,7 @@ def main():
     # else:
     #     output_file = "centerpoint_predictions_val_2.npy" 
 
-    output_file = "centerpoint_predictions_val_2.npy" 
+    output_file = "centerpoint_predictions_val_nothing.npy" 
 
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -135,6 +136,10 @@ def main():
     with torch.no_grad():
         for idx, data_dict in enumerate(nusc_dataset):
 
+            # if idx < 50:
+            #     print(idx)
+            #     continue
+            
             torch.cuda.empty_cache()    
             # print(f"Iteration {idx + 1} / n")
             data_dict = nusc_dataset.collate_batch([data_dict])
@@ -153,7 +158,7 @@ def main():
             new_dict = {'metadata': pred_dict['metadata']}
             # new_dict = {'metadata': pred_dict['metadata'].tolist()}
 
-            threshold_mask = pred_dict['pred_scores'] > 0.19  # kapoy 0.61 eida einai ok.... mporei kai ligo pio kato
+            threshold_mask = pred_dict['pred_scores'] > 0.57
 
             for key, value in pred_dict.items():
                 if key != 'metadata':
