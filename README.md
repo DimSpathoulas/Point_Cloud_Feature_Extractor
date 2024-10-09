@@ -49,13 +49,4 @@ FROM CFGS nuscenes_yaml DATA_PATH: '/second_ext4/ktsiakas/kosmas/nuscenes'
 
 6. The change in models/dense_heads/center_head.py, WHY? What does it change from the original one?
 
-7. [DONE] Nuscenes_dataset.py L123, why this? Remove all the hard-coded things.  
-
-Currently:  
-- screen #1: openpcdet, running for the val set
-- screen #1: openpcdet_train, running for the train set
-
-L94 in Inference actually initializes the mode train for centerpoint detector aswell...
-Dont know how to add an input train or val for the train split val explicitly...
-nuscenes_dataset.py L20 : THE INPUT train (from nusc train split) actually initializes state train for centerpoint aswell
-and L50 is the actual input
+7. [DONE] Nuscenes_dataset.py L123, why this? Remove all the hard-coded things. 
