@@ -123,7 +123,7 @@ def main():
     # else:
     #     output_file = "centerpoint_predictions_val_2.npy" 
 
-    output_file = "centerpoint_predictions_val_nothing.npy" 
+    output_file = "val_conv_layer6455_thr034.npy" 
 
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -158,7 +158,7 @@ def main():
             new_dict = {'metadata': pred_dict['metadata']}
             # new_dict = {'metadata': pred_dict['metadata'].tolist()}
 
-            threshold_mask = pred_dict['pred_scores'] > 0.57
+            threshold_mask = pred_dict['pred_scores'] > 0.34
 
             for key, value in pred_dict.items():
                 if key != 'metadata':

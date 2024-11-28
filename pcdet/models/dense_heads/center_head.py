@@ -391,7 +391,7 @@ class CenterHead(nn.Module):
     def forward(self, data_dict):
 
         spatial_features_2d = data_dict['spatial_features_2d']
-
+        # print("spatial feats", spatial_features_2d.shape)
         x = self.shared_conv(spatial_features_2d)
 
         # print("shared_conv", x.shape)
@@ -427,10 +427,17 @@ class CenterHead(nn.Module):
         # print(voxel_size[0], point_cloud_range[0], voxel_size[1], point_cloud_range[1], feature_map_stride)
         # 0.1 -51.2 0.1 -51.2 8
 
+        region_size = 5
+
+        # features = spatial_features_2d[0]  # 512, 128, 128 with 0.1 but with 0.075 its 180*180
+        features = x[0]
+        # print(features.shape)
+
         if len(data_dict['final_box_dicts'][0]['pred_boxes']) == 0:  # if empty return empty
-            region_tensor = torch.empty((0, 512, 3, 3))
+            region_tensor = torch.empty((0, features.shape[0], region_size, region_size))
 
         else:
+
 
             # print(data_dict['final_box_dicts'][0]['pred_scores'].shape)
             feature_map_stride = self.feature_map_stride
@@ -441,40 +448,66 @@ class CenterHead(nn.Module):
             xc = pred_dicts[0]['pred_boxes'][:, 0]  # edo eina ta n kentra sto x
             yc = pred_dicts[0]['pred_boxes'][:, 1]
 
-            features = spatial_features_2d[0]  # 512, 128, 128 with 0.1 but with 0.075 its 180*180
             # print(features.shape[1]- 2)
 
             xs = (xc - point_cloud_range[0]) / (feature_map_stride*voxel_size[0])
             ys = (yc - point_cloud_range[1]) / (feature_map_stride*voxel_size[1])
 
-            region_size = 3
             region_dict = []
 
             for x_center, y_center in zip(xs, ys):
 
-                x_start = max(0, int(x_center - region_size // 2))
+                half_size = region_size // 2
 
-                if x_start >= features.shape[1]- 2:  #126 and 178
-                    x_start = features.shape[1]- 3   #125 and 177
 
-                y_start = max(0, int(y_center - region_size // 2))
+                x_start = max(0, int(x_center - half_size))
+                y_start = max(0, int(y_center - half_size))
 
-                if y_start >= features.shape[1]- 2:
-                    y_start = features.shape[1]- 3
+                if x_start >= features.shape[1] - region_size:
+                    x_start = features.shape[1] - region_size
+                if y_start >= features.shape[2] - region_size:
+                    y_start = features.shape[2] - region_size
 
-                x_end = min(features.size(1), int(x_center + region_size // 2 + 1))
-                y_end = min(features.size(2), int(y_center + region_size // 2 + 1))
+                x_end = x_start + region_size
+                y_end = y_start + region_size
 
-                if x_end <= 2:  # 2
-                    x_end = 3   # 3
-
-                if y_end <= 2:
-                    y_end = 3
-
-                # print(x_start, x_end,'\n', y_start, y_end)
-                # print("\n", y_end - y_start, x_end-x_start)
+                if x_end > features.shape[1]:
+                    x_start = features.shape[1] - region_size
+                    x_end = features.shape[1]
+                if y_end > features.shape[2]:
+                    y_start = features.shape[2] - region_size
+                    y_end = features.shape[2]
 
                 region = features[:, x_start:x_end, y_start:y_end]
+                
+                # print(x_center, y_center, x_start, x_end, y_start, y_end)
+
+                # older
+                # x_start = max(0, int(x_center - region_size // 2))
+
+                # if x_start >= features.shape[1]- region_size:  #126 and 178
+                #     x_start = features.shape[1]- region_size - 1  #125 and 177
+
+                # y_start = max(0, int(y_center - region_size // 2))
+
+                # if y_start >= features.shape[2] - region_size:
+                #     y_start = features.shape[2] - region_size - 1
+
+                # x_end = min(features.size(1), int(x_center + region_size // 2 + 1))
+                # y_end = min(features.size(2), int(y_center + region_size // 2 + 1))
+
+                # if x_end <= region_size - 1:  # 2
+                #     x_end = region_size   # 3
+
+                # if y_end <= region_size - 1:
+                #     y_end = region_size
+
+                # print(x_start, x_end, y_start, y_end)
+                # print(y_end - y_start, x_end-x_start, "\n")
+
+                # region = features[:, x_start:x_end, y_start:y_end]
+
+
                 region_dict.append(region)
 
             region_tensor = torch.stack(region_dict, dim=0)
