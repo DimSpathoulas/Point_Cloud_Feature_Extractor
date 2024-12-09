@@ -7,7 +7,7 @@ from ..model_utils import model_nms_utils
 from ..model_utils import centernet_utils
 from ...utils import loss_utils
 from functools import partial
-
+import torch.nn.functional as F
 
 class SeparateHead(nn.Module):
     def __init__(self, input_channels, sep_head_dict, init_bias=-2.19, use_bias=False, norm_func=None):
@@ -388,6 +388,27 @@ class CenterHead(nn.Module):
             roi_labels[bs_idx, :num_boxes] = pred_dicts[bs_idx]['pred_labels']
         return rois, roi_scores, roi_labels
 
+
+    def interpolate_region(self, features, x_center, y_center, region_size):
+        # Compute the normalized coordinates of the grid for a region
+        half_size = (region_size - 1) / 2  # Half of the region size
+        # Generate grid points for the region
+        x_offsets = torch.linspace(-half_size, half_size, region_size, device=features.device)
+        y_offsets = torch.linspace(-half_size, half_size, region_size, device=features.device)
+        y_grid, x_grid = torch.meshgrid(y_offsets, x_offsets, indexing='ij')
+        # Normalize the grid coordinates to [-1, 1] for `grid_sample`
+        x_norm = ((x_center + x_grid) / (features.shape[2] - 1)) * 2 - 1  # Normalize x
+        y_norm = ((y_center + y_grid) / (features.shape[1] - 1)) * 2 - 1  # Normalize y
+
+        # Combine x and y into a grid of shape (region_size, region_size, 2)
+        grid = torch.stack([x_norm, y_norm], dim=-1).unsqueeze(0)  # Shape: (1, region_size, region_size, 2)
+        # Perform bilinear sampling
+        region = F.grid_sample(features.unsqueeze(0), grid, mode='bilinear', padding_mode='border', align_corners=True)
+        
+        # Remove batch dimension and return
+        return region.squeeze(0)
+
+
     def forward(self, data_dict):
 
         spatial_features_2d = data_dict['spatial_features_2d']
@@ -427,10 +448,10 @@ class CenterHead(nn.Module):
         # print(voxel_size[0], point_cloud_range[0], voxel_size[1], point_cloud_range[1], feature_map_stride)
         # 0.1 -51.2 0.1 -51.2 8
 
-        region_size = 5
+        region_size = 3
 
-        # features = spatial_features_2d[0]  # 512, 128, 128 with 0.1 but with 0.075 its 180*180
-        features = x[0]
+        features = spatial_features_2d[0]  # 512, 128, 128 with 0.1 but with 0.075 its 180*180
+        # features = x[0]
         # print(features.shape)
 
         if len(data_dict['final_box_dicts'][0]['pred_boxes']) == 0:  # if empty return empty
@@ -456,29 +477,32 @@ class CenterHead(nn.Module):
             region_dict = []
 
             for x_center, y_center in zip(xs, ys):
+                
+                region = self.interpolate_region(features=features ,x_center=x_center, y_center=y_center, region_size=region_size)
+                # print(region.shape)
 
-                half_size = region_size // 2
+                # half_size = region_size // 2
 
 
-                x_start = max(0, int(x_center - half_size))
-                y_start = max(0, int(y_center - half_size))
+                # x_start = max(0, int(x_center - half_size))
+                # y_start = max(0, int(y_center - half_size))
 
-                if x_start >= features.shape[1] - region_size:
-                    x_start = features.shape[1] - region_size
-                if y_start >= features.shape[2] - region_size:
-                    y_start = features.shape[2] - region_size
+                # if x_start >= features.shape[1] - region_size:
+                #     x_start = features.shape[1] - region_size
+                # if y_start >= features.shape[2] - region_size:
+                #     y_start = features.shape[2] - region_size
 
-                x_end = x_start + region_size
-                y_end = y_start + region_size
+                # x_end = x_start + region_size
+                # y_end = y_start + region_size
 
-                if x_end > features.shape[1]:
-                    x_start = features.shape[1] - region_size
-                    x_end = features.shape[1]
-                if y_end > features.shape[2]:
-                    y_start = features.shape[2] - region_size
-                    y_end = features.shape[2]
+                # if x_end > features.shape[1]:
+                #     x_start = features.shape[1] - region_size
+                #     x_end = features.shape[1]
+                # if y_end > features.shape[2]:
+                #     y_start = features.shape[2] - region_size
+                #     y_end = features.shape[2]
 
-                region = features[:, x_start:x_end, y_start:y_end]
+                # region = features[:, x_start:x_end, y_start:y_end]
                 
                 # print(x_center, y_center, x_start, x_end, y_start, y_end)
 
