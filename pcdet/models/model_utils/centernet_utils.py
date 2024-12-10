@@ -230,7 +230,6 @@ def decode_bbox_from_heatmap(heatmap, rot_cos, rot_sin, center, center_z, dim,
 
         if circle_nms:
             assert False, 'not checked yet'
-            print("mioy")
             centers = cur_boxes[:, [0, 1]]
             boxes = torch.cat((centers, scores.view(-1, 1)), dim=1)
             keep = _circle_nms(boxes, min_radius=min_radius, post_max_size=nms_post_max_size)
@@ -247,8 +246,6 @@ def decode_bbox_from_heatmap(heatmap, rot_cos, rot_sin, center, center_z, dim,
 
         if iou is not None:
             ret_pred_dicts[-1]['pred_iou'] = iou[k, cur_mask]
-    return ret_pred_dicts
-
     return ret_pred_dicts
 
 def _topk_1d(scores, batch_size, batch_idx, obj, K=40, nuscenes=False):
