@@ -29,7 +29,7 @@ tools/inference.py
 
 2. Probably to run, you need:   
 `cd tools;`
-`python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel01_centerpoint_nds_6454.pth`  
+`CUDA_VISIBLE_DEVICES=0 python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel01_centerpoint_nds_6454.pth`  
 or
 `python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel0075_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel0075_centerpoint_nds_6648.pth`  
 
