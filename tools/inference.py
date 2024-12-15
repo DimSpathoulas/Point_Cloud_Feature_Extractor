@@ -157,7 +157,8 @@ def main():
 
             new_dict = {'metadata': pred_dict['metadata']}
             # new_dict = {'metadata': pred_dict['metadata'].tolist()}
-
+            
+            # CHOOSE ONE
             # threshold_mask = pred_dict['pred_scores'] > 0.20
             threshold_mask = torch.logical_and(pred_dict['pred_scores'] > 0.20, pred_dict['pred_scores'] < 0.50)
 
