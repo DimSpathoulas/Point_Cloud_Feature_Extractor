@@ -123,7 +123,7 @@ def main():
     # else:
     #     output_file = "centerpoint_predictions_val_2.npy" 
 
-    output_file = "val_conv_layer51233_thr020_050_interpolated.npy" 
+    output_file = "train_conv_layer51233_thr020_050_interpolated.npy" 
 
     if os.path.exists(output_file):
         os.remove(output_file)
