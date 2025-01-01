@@ -1,6 +1,6 @@
 # Point Cloud Feature extraction based on detections
 Part of my master thesis: 
-**Probabilistic 3D Multi-Modal Multi-Object Tracking Using Machine Learning and Analytic Collision Risk Calculation for Autonomous Vehicle Navigation.**
+**Probabilistic 3D Multi-Modal Multi-Object Tracking Using Machine Learning and Analytic Collision Risk Calculation for Autonomous Vehicles Navigation.**
 
 ## Overview
 This module is dedicated to extracting 3d detections and their representing point cloud features based on pre-trained centerpoint detectors. A review paper in english is under construction.
