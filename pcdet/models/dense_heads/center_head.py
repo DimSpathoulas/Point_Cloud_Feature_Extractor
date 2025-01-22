@@ -14,10 +14,6 @@ class SeparateHead(nn.Module):
         super().__init__()
         self.sep_head_dict = sep_head_dict
 
-        # print("in separate head")
-
-        # ftiaxnei 6 heads
-
         for cur_name in self.sep_head_dict:
             output_channels = self.sep_head_dict[cur_name]['out_channels']
             num_conv = self.sep_head_dict[cur_name]['num_conv']
