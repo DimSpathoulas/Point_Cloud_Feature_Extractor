@@ -123,7 +123,7 @@ def main():
     # else:
     #     output_file = "centerpoint_predictions_val_2.npy" 
 
-    output_file = "train_conv_layer51233_thr020_050_interpolated.npy" 
+    output_file = "train_conv_layer51233_thr057_interpolated.npy" 
 
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -159,8 +159,8 @@ def main():
             # new_dict = {'metadata': pred_dict['metadata'].tolist()}
             
             # CHOOSE ONE
-            # threshold_mask = pred_dict['pred_scores'] > 0.20
-            threshold_mask = torch.logical_and(pred_dict['pred_scores'] > 0.20, pred_dict['pred_scores'] < 0.50)
+            threshold_mask = pred_dict['pred_scores'] > 0.20
+            # threshold_mask = torch.logical_and(pred_dict['pred_scores'] > 0.20, pred_dict['pred_scores'] < 0.50)
 
             for key, value in pred_dict.items():
                 if key != 'metadata':
