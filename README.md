@@ -17,7 +17,7 @@ You should follow the instructions from [OpenPCDet](https://github.com/open-mmla
 ### 3. Get Detections and Extract Features
 Head to ```pcdet/datasets/nuscenes/nuscenes_dataset.py``` ```L50``` and choose the val or train infos you have created.
 Go to the /tools directory.
-In ```inference.py``` you must add the destination file and choose an apropriate acceptance detections thresholds.
+In ```inference.py``` you must add the destination file and choose an apropriate acceptance detections threshold.
 To get results with voxel size 0.1:
 ```bash
 python inference.py --cfg_file cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml --data_path /second_ext4/ktsiakas/kosmas/nuscenes --ckpt ../cbgs_voxel01_centerpoint_nds_6454.pth
