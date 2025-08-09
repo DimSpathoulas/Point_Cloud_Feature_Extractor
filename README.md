@@ -1,4 +1,4 @@
-# Point Cloud Feature extraction based on detections
+# Point Cloud Feature extraction based on 3D Detections
 Part of my master thesis: 
 **3D Multi-Modal Multi-Object Tracking via Machine Learning and Analytic Collision Risk Calculation for Autonomous Vehicles Navigation.**
 
